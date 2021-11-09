@@ -23,7 +23,7 @@ interface PurchaseList {
    function deletePurchase(uint32 id) external;
    function completePurchase(uint32 id, bool done) external;
    function getPurchasesList() external returns (Purchase[] purchasesList);
-   function getNotPaidAmount() external returns (Purchase[] notPaidAmount);
+   function getStat() external returns(SummaryPurchase);
 }
 
 
