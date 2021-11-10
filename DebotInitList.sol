@@ -16,7 +16,7 @@ abstract contract DebotInitList is  Debot, Upgradable {
 
     uint32 INITIAL_BALANCE =  100000000;  // balance
 
-    function setTodoCode(TvmCell code) public {
+    function setDebotCode(TvmCell code) public {
         require(msg.pubkey() == tvm.pubkey(), 101);
         tvm.accept();
         m_code = code;
@@ -106,10 +106,49 @@ abstract contract DebotInitList is  Debot, Upgradable {
     }
 
     function onErrorRepeatCredit(uint32 sdkError, uint32 exitCode) public {
-        // TODO: check errors if needed.
+        //check errors
         sdkError;
         exitCode;
         creditAccount(m_msigAddress);
+    }
+
+        function waitBeforeDeploy() public  {
+        Sdk.getAccountType(tvm.functionId(checkIfStatusIs0), m_address);
+    }
+
+    function checkIfStatusIs0(int8 acc_type) public {
+        if (acc_type ==  0) {
+            deploy();
+        } else {
+            waitBeforeDeploy();
+        }
+    }
+
+
+    function deploy() private view {
+            TvmCell image = tvm.insertPubkey(m_code, m_masterPubKey);
+            optional(uint256) none;
+            TvmCell deployMsg = tvm.buildExtMsg({
+                abiVer: 2,
+                dest: m_address,
+                callbackId: tvm.functionId(onSuccess),
+                onErrorId:  tvm.functionId(onErrorRepeatDeploy),    
+                time: 0,
+                expire: 0,
+                sign: true,
+                pubkey: none,
+                stateInit: image,
+                call: {HasConstructorWithPubKey, m_masterPubKey}
+            });
+            tvm.sendrawmsg(deployMsg, 1);
+    }
+
+
+    function onErrorRepeatDeploy(uint32 sdkError, uint32 exitCode) public view {
+        
+        sdkError;
+        exitCode;
+        deploy();
     }
 
 
