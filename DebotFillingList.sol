@@ -24,7 +24,27 @@ contract DebotFillingList is  DebotInitList {
         );
     }
 
-    
+
+    function createPurchase(uint32 index) public {
+        index = index;
+        Terminal.input(tvm.functionId(createTask_), "One line please:", false);
+    }
+
+    function createPurchase_(string value) public view {
+        optional(uint256) pubkey = 0;
+        PurchaseList(m_address).createPurchase{
+                abiVer: 2,
+                extMsg: true,
+                sign: true,
+                pubkey: pubkey,
+                time: uint64(now),
+                expire: 0,
+                callbackId: tvm.functionId(onSuccess),
+                onErrorId: tvm.functionId(onError)
+            }(value);
+    }
+
+
 
 
 
